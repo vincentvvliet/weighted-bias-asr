@@ -16,12 +16,24 @@ def main():
 
 
 def read_file(file_path):
+    """
+    Reads data from specific file
+
+    :return: Panda's Dataframe
+    """
+
     with open(file_path, 'r') as file:
         data = [float(line.strip()) for line in file if line.strip()]
     return pd.DataFrame(data, columns=["Value"])
 
 
 def retrieve_data():
+    """
+    Reads data from data/ folder and combines data for each data type into seperate dataframes.
+
+    :return: Panda's Dataframe for each data type
+    """
+
     # Directory and file structure
     base_dir = 'data'
     parent_folders = ['WER', 'CER']
@@ -55,7 +67,19 @@ def retrieve_data():
     return wer_data_frames, cer_data_frames
 
 
-def process_data_per_speaker_group(data_frames, metric='median', input_type='NoAug', speech_type='Read', data_type='WER'):
+def process_data_per_speaker_group(data_frames, metric='median', input_type='NoAug', speech_type='Read', data_type='WER') -> None:
+    """
+    Processes data per speaker group based on metric, input_type, speech_type, and data_type.
+    Writes processed data to an output file in results/.
+
+    :param data_frames: Panda's DataFrame containing error rate data
+    :param metric: specific metric to calculate, based on available Panda's Dataframe functions
+    :param input_type: NoAug or SpAug or SpSpecAug
+    :param speech_type: Read or Hmi
+    :param data_type: WER or CER
+    :return:
+    """
+
     # Get the pandas function for the specified metric
     metric_func = getattr(pd.Series, metric)
     values = {}
@@ -87,7 +111,20 @@ def process_data_per_speaker_group(data_frames, metric='median', input_type='NoA
         file.write(output)
 
 
-def process_data_per_speech_type(data_frames, metric='median', input_type='NoAug', speech_type='Read', data_type='WER'):
+def process_data_per_speech_type(data_frames, metric='median', input_type='NoAug', speech_type='Read', data_type='WER') -> None:
+    """
+        Processes data per speech type based on metric, input_type, speech_type, and data_type. For the specified speech
+        type, the values for all files within the matching directory are combined and processed together.
+        Writes processed data to an output file in results/.
+
+        :param data_frames: Panda's DataFrame containing error rate data
+        :param metric: specific metric to calculate, based on available Panda's Dataframe functions
+        :param input_type: NoAug or SpAug or SpSpecAug
+        :param speech_type: Read or Hmi
+        :param data_type: WER or CER
+        :return:
+        """
+
     # Get the pandas function for the specified metric
     metric_func = getattr(pd.Series, metric)
 
