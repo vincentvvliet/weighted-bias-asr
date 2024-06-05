@@ -1,160 +1,44 @@
 import os
 import pandas as pd
-
+import numpy as np
+from src.visualize import plot_histogram, plot_box_plot, plot_line_plot, combined_plots, combined_plots_2
+from src.process import process_data_per_speaker_group, process_data_per_speech_type
+from src.asr_performance_data import AsrPerformanceData
+from src.filepath_manager import FilepathManager
 
 def main():
+    # Initialize dataframe creation
+    filepath_manager = FilepathManager('config.json')
+    asr_performance_data = AsrPerformanceData(filepath_manager=filepath_manager)
+
     # Read data
-    wer_data_frames, cer_data_frames = retrieve_data()
+    data_frame = asr_performance_data.build_dataframe()
 
-    # Process the data based on specific metric, input_type, and speech_type
-    process_data_per_speaker_group(wer_data_frames, metric='std', input_type='NoAug', speech_type='Read', data_type='WER')
-    process_data_per_speaker_group(cer_data_frames, metric='std', input_type='NoAug', speech_type='Read', data_type='CER')
+    # Data Processing
+    for error_rate in filepath_manager.error_rates:
+        error_rate_frame = preprocess_data(data_frame[error_rate])
 
-    # Process data per data_type, per speech type
-    process_data_per_speech_type(wer_data_frames, metric='std', input_type='NoAug', speech_type='Read', data_type='WER')
-    process_data_per_speech_type(cer_data_frames, metric='std', input_type='NoAug', speech_type='Read', data_type='CER')
+        # TODO: Process new data
+        # Process the data based on specific metric, input_type, and speech_type
+        # process_data_per_speaker_group(error_rate_frame, metric='std', input_type='NoAug', speech_type='Read', error_rate=error_rate)
+
+        # Process data per error_rate, per speech type
+        # process_data_per_speech_type(error_rate_frame, metric='std', input_type='NoAug', speech_type='Read', error_rate=error_rate)
+
+    # Data visualization
+    # TODO: implement
 
 
-def read_file(file_path):
+def preprocess_data(df):
     """
-    Reads data from specific file
+    Drop NaN and infinite values.
 
-    :return: Panda's Dataframe
+    :param df: Pandas Dataframe to be processed
+    :return: Preprocessed Dataframe
     """
-
-    with open(file_path, 'r') as file:
-        data = [float(line.strip()) for line in file if line.strip()]
-    return pd.DataFrame(data, columns=["Value"])
-
-
-def retrieve_data():
-    """
-    Reads data from data/ folder and combines data for each data type into seperate dataframes.
-
-    :return: Panda's Dataframe for each data type
-    """
-
-    # Directory and file structure
-    base_dir = 'data'
-    parent_folders = ['WER', 'CER']
-    child_folders = ['NoAug', 'SpAug', 'SpSpecAug']
-    sub_folders = ['HMI', 'Rd']
-    files_rd = ['DC_Read_{parent}', 'DOA_Read_{parent}', 'DT_Read_{parent}', 'NnA_Read_{parent}', 'NnT_Read_{parent}']
-    files_hmi = ['DC_Hmi_{parent}', 'DOA_Hmi_{parent}', 'DT_Hmi_{parent}', 'NnA_Hmi_{parent}', 'NnT_Hmi_{parent}']
-
-    # Read files into dataframes
-    wer_data_frames = {}
-    cer_data_frames = {}
-
-    for parent in parent_folders:
-        for child in child_folders:
-            for sub in sub_folders:
-                # Determine the correct file naming format
-                files = files_hmi if sub == 'HMI' else files_rd
-                for file in files:
-                    file_name = file.format(parent=parent)
-                    file_path = os.path.join(base_dir, parent, child, sub, f'{file_name}s')
-
-                    try:
-                        df = read_file(file_path)
-                        if parent == 'WER':
-                            wer_data_frames[file_path] = df
-                        else:
-                            cer_data_frames[file_path] = df
-                    except Exception as e:
-                        print(f'Failed to read {file_path}: {e}')
-
-    return wer_data_frames, cer_data_frames
-
-
-def process_data_per_speaker_group(data_frames, metric='median', input_type='NoAug', speech_type='Read', data_type='WER') -> None:
-    """
-    Processes data per speaker group based on metric, input_type, speech_type, and data_type.
-    Writes processed data to an output file in results/.
-
-    :param data_frames: Panda's DataFrame containing error rate data
-    :param metric: specific metric to calculate, based on available Panda's Dataframe functions
-    :param input_type: NoAug or SpAug or SpSpecAug
-    :param speech_type: Read or Hmi
-    :param data_type: WER or CER
-    :return:
-    """
-
-    # Get the pandas function for the specified metric
-    metric_func = getattr(pd.Series, metric)
-    values = {}
-
-    speech_type_keywords = {
-        'Read': ['DC_Read_', 'DOA_Read_', 'DT_Read_', 'NnA_Read_', 'NnT_Read_'],
-        'Hmi': ['DC_Hmi_', 'DOA_Hmi_', 'DT_Hmi_', 'NnA_Hmi_', 'NnT_Hmi_']
-    }
-
-    # Check for valid speech type
-    if speech_type not in speech_type_keywords:
-        print(f"Invalid speech_type: {speech_type}. Valid options are 'Read' or 'Hmi'.")
-        return
-
-    # Apply the metric function
-    for file_path, df in data_frames.items():
-        if input_type in file_path and any(keyword in file_path for keyword in speech_type_keywords[speech_type]):
-            metric_value = metric_func(df['Value'])
-            values[file_path] = metric_value
-
-    # Write to output file
-    output = ''
-    for file_path, metric_value in values.items():
-        output_string = f'{metric.capitalize()} value for {file_path}: {metric_value}\n'
-        print(output_string)
-        output += output_string
-
-    with open(f'results/{metric}-{input_type}-{speech_type}-{data_type}.txt', 'w') as file:
-        file.write(output)
-
-
-def process_data_per_speech_type(data_frames, metric='median', input_type='NoAug', speech_type='Read', data_type='WER') -> None:
-    """
-        Processes data per speech type based on metric, input_type, speech_type, and data_type. For the specified speech
-        type, the values for all files within the matching directory are combined and processed together.
-        Writes processed data to an output file in results/.
-
-        :param data_frames: Panda's DataFrame containing error rate data
-        :param metric: specific metric to calculate, based on available Panda's Dataframe functions
-        :param input_type: NoAug or SpAug or SpSpecAug
-        :param speech_type: Read or Hmi
-        :param data_type: WER or CER
-        :return:
-        """
-
-    # Get the pandas function for the specified metric
-    metric_func = getattr(pd.Series, metric)
-
-    # Filter on speech type
-    speech_type_keywords = {
-        'Read': ['DC_Read_', 'DOA_Read_', 'DT_Read_', 'NnA_Read_', 'NnT_Read_'],
-        'Hmi': ['DC_Hmi_', 'DOA_Hmi_', 'DT_Hmi_', 'NnA_Hmi_', 'NnT_Hmi_']
-    }
-
-    # Check for valid speech type
-    if speech_type not in speech_type_keywords:
-        print(f"Invalid speech_type: {speech_type}. Valid options are 'Read' or 'Hmi'.")
-        return
-
-    # Combine values for each speaker group
-    combined_values = []
-    for file_path, df in data_frames.items():
-        if input_type in file_path and any(keyword in file_path for keyword in speech_type_keywords[speech_type]):
-            combined_values.append(df['Value'])
-
-    if combined_values:
-        # Concatenate values and apply the metric function
-        combined_series = pd.concat(combined_values, ignore_index=True)
-        overall_metric_value = metric_func(combined_series)
-        output = f'Overall {metric.capitalize()} value for {input_type} {speech_type} {data_type} data: {overall_metric_value}'
-        print(output)
-        with open(f'results/overall-{metric}-{input_type}-{speech_type}-{data_type}.txt', 'w') as file:
-            file.write(output + '\n')
-    else:
-        print(f'No data found for {input_type} {speech_type}.')
+    df = df.dropna()
+    df = df[~df.isin([np.inf, -np.inf])]
+    return df
 
 
 if __name__ == '__main__':

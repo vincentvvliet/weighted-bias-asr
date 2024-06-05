@@ -1,3 +1,7 @@
 data/
 .idea/
 results/
+plots/
+lexicon/
+config.json
+__pycache__/
