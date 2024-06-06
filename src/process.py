@@ -1,92 +1,42 @@
 import pandas as pd
+import numpy as np
+import json
 
 
-# TODO: update functionality to conform with new data
-def process_data_per_speaker_group(data_frames, metric='median', input_type='NoAug', speech_type='Read', error_rate='WER') -> None:
+def preprocess_data(df):
     """
-    Processes data per speaker group based on metric, input_type, speech_type, and error_rate.
-    Writes processed data to an output file in results/.
+    Drop NaN and infinite values.
 
-    :param data_frames: Panda's DataFrame containing error rate data
-    :param metric: specific metric to calculate, based on available Panda's Dataframe functions
-    :param input_type: NoAug or SpAug or SpSpecAug
-    :param speech_type: Read or Hmi
-    :param error_rate: WER or CER
-    :return:
+    :param df: Pandas Dataframe to be processed
+    :return: Preprocessed Dataframe
     """
-
-    # Get the pandas function for the specified metric
-    metric_func = getattr(pd.Series, metric)
-    values = {}
-
-    speech_type_keywords = {
-        'Read': ['DC_Read_', 'DOA_Read_', 'DT_Read_', 'NnA_Read_', 'NnT_Read_'],
-        'Hmi': ['DC_Hmi_', 'DOA_Hmi_', 'DT_Hmi_', 'NnA_Hmi_', 'NnT_Hmi_']
-    }
-
-    # Check for valid speech type
-    if speech_type not in speech_type_keywords:
-        print(f"Invalid speech_type: {speech_type}. Valid options are 'Read' or 'Hmi'.")
-        return
-
-    # Apply the metric function
-    for file_path, df in data_frames.items():
-        if input_type in file_path and any(keyword in file_path for keyword in speech_type_keywords[speech_type]):
-            metric_value = metric_func(df['Value'])
-            values[file_path] = metric_value
-
-    # Write to output file
-    output = ''
-    for file_path, metric_value in values.items():
-        output_string = f'{metric.capitalize()} value for {file_path}: {metric_value}\n'
-        print(output_string)
-        output += output_string
-
-    with open(f'results/{metric}-{input_type}-{speech_type}-{error_rate}.txt', 'w') as file:
-        file.write(output)
+    df = df.dropna()
+    df = df[~df.isin([np.inf, -np.inf])]
+    return df
 
 
-def process_data_per_speech_type(data_frames, metric='median', input_type='NoAug', speech_type='Read', error_rate='WER') -> None:
-    """
-        Processes data per speech type based on metric, input_type, speech_type, and error_rate. For the specified speech
-        type, the values for all files within the matching directory are combined and processed together.
-        Writes processed data to an output file in results/.
+def convert_max_min_to_range(result):
+    for model in result:
+        max_value = result[model].pop('max', None)
+        min_value = result[model].pop('min', None)
+        if max_value is not None and min_value is not None:
+            result[model]['range'] = f'{max_value}-{min_value}'
 
-        :param data_frames: Panda's DataFrame containing error rate data
-        :param metric: specific metric to calculate, based on available Panda's Dataframe functions
-        :param input_type: NoAug or SpAug or SpSpecAug
-        :param speech_type: Read or Hmi
-        :param error_rate: WER or CER
-        :return:
-        """
 
-    # Get the pandas function for the specified metric
-    metric_func = getattr(pd.Series, metric)
+def statistics_per_asr_model(df, fpm, error_rate, speaking_style):
+    df = pd.Series(data=df, index=fpm.asr_models)
 
-    # Filter on speech type
-    speech_type_keywords = {
-        'Read': ['DC_Read_', 'DOA_Read_', 'DT_Read_', 'NnA_Read_', 'NnT_Read_'],
-        'Hmi': ['DC_Hmi_', 'DOA_Hmi_', 'DT_Hmi_', 'NnA_Hmi_', 'NnT_Hmi_']
-    }
+    result = {'NoAug': {}, 'SpAug': {}, 'SpSpecAug': {}, 'Whisper': {}, 'FT-Wpr': {}}
+    metrics = ['median', 'std', 'max', 'min']
 
-    # Check for valid speech type
-    if speech_type not in speech_type_keywords:
-        print(f"Invalid speech_type: {speech_type}. Valid options are 'Read' or 'Hmi'.")
-        return
+    for model in fpm.asr_models:
+        model_df = pd.DataFrame(df[model])
+        model_df = preprocess_data(model_df)
+        for metric in metrics:
+            metric_func = getattr(pd.Series, metric)
+            result[model][metric] = metric_func(model_df, axis=0).tolist()[0]
 
-    # Combine values for each speaker group
-    combined_values = []
-    for file_path, df in data_frames.items():
-        if input_type in file_path and any(keyword in file_path for keyword in speech_type_keywords[speech_type]):
-            combined_values.append(df['Value'])
+    convert_max_min_to_range(result)
 
-    if combined_values:
-        # Concatenate values and apply the metric function
-        combined_series = pd.concat(combined_values, ignore_index=True)
-        overall_metric_value = metric_func(combined_series)
-        output = f'Overall {metric.capitalize()} value for {input_type} {speech_type} {error_rate} data: {overall_metric_value}'
-        print(output)
-        with open(f'results/overall-{metric}-{input_type}-{speech_type}-{error_rate}.txt', 'w') as file:
-            file.write(output + '\n')
-    else:
-        print(f'No data found for {input_type} {speech_type}.')
+    with open(f'results/statistics-{fpm.speaking_style_folders[speaking_style]}-{error_rate}.txt', 'w') as file:
+        file.write(json.dumps(result, indent=4))

@@ -28,16 +28,13 @@ class AsrPerformanceData:
 
         for error_rate in error_rates:
             # Initialize for each error_rate
-            d[error_rate] = {'Group': []}
+            d[error_rate] = {}
 
             for model in asr_models:
                 # Initialize for each model per error rate
                 d[error_rate][model] = []
 
             for group in speaker_groups:
-                # TODO: see if group is necessary
-                d[error_rate]['Group'].append(group)
-
                 for model in asr_models:
                     model_error_filepath = self.filepath_manager.get_word_error_rate_path(
                         error_rate=error_rate,
