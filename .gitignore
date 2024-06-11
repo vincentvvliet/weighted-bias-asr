@@ -5,3 +5,4 @@ plots/
 lexicon/
 config.json
 __pycache__/
+asr_output/

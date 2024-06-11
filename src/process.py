@@ -38,5 +38,5 @@ def statistics_per_asr_model(df, fpm, error_rate, speaking_style):
 
     convert_max_min_to_range(result)
 
-    with open(f'results/statistics-{fpm.speaking_style_folders[speaking_style]}-{error_rate}.txt', 'w') as file:
+    with open(f'results/statistics/statistics-{fpm.speaking_style_folders[speaking_style]}-{error_rate}.txt', 'w') as file:
         file.write(json.dumps(result, indent=4))
