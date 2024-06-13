@@ -7,7 +7,7 @@ class AsrOutputData:
     """
     Based on a similar implementation by @kmjones.
 
-    Handles the creation of a Pandas Dataframe containing all the information from the performance error-data.
+    Handles the creation of a Pandas Dataframe containing all the information from the model output.
 
     Attributes:
         filepath_manager: A FilepathManager instance to handle file retrieval and reading.
@@ -17,7 +17,6 @@ class AsrOutputData:
         self.filepath_manager = filepath_manager
 
     def build_dataframe(self, speaking_style=0):
-        error_rates = self.filepath_manager.get_error_rates()
         speaker_groups = self.filepath_manager.get_speaker_groups()
         asr_models = self.filepath_manager.get_asr_models()
 

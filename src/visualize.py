@@ -28,7 +28,7 @@ def plot_statistics(data):
         fig, axes = plt.subplots(1, len(metrics), figsize=(20, 5), sharey=True)
         fig.suptitle(f'Statistics for {rate_type}', fontsize=16)
 
-        bar_width = 0.2
+        bar_width = 0.15
         for i, metric in enumerate(metrics):
             ax = axes[i]
             ax.set_title(metric.capitalize())
@@ -47,6 +47,10 @@ def plot_statistics(data):
             if i == 0:
                 ax.set_ylabel('Value')
             ax.legend(title='Group')
+
+            # Set the same y-axis range for all subplots within the same plot
+            for ax in axes:
+                ax.set_ylim(0, 1)
 
         plt.tight_layout()
         plt.subplots_adjust(top=0.85)
