@@ -11,11 +11,10 @@ def performance_difference(df, fpm, baseline_type, type):
         for item in model_df.items():
             if type == 'absolute':
                 # bias = bias_i - baseline_performance
-                print(item)
+                return
             elif type == 'relative':
                 # bias = (bias_i - baseline_performance) / baseline_performance
-                print(item)
-
+                return
 
     return
 

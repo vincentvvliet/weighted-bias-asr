@@ -3,7 +3,7 @@ import pandas as pd
 from .filepath_manager import FilepathManager
 
 
-class AsrPerformanceData:
+class AsrOutputData:
     """
     Based on a similar implementation by @kmjones.
 
@@ -26,25 +26,17 @@ class AsrPerformanceData:
 
         d = {}
 
-        for error_rate in error_rates:
-            # Initialize for each error_rate
-            d[error_rate] = {}
+        for model in asr_models:
+            # Initialize for each model
+            d[model] = []
 
+        for group in speaker_groups:
             for model in asr_models:
-                # Initialize for each model per error rate
-                d[error_rate][model] = []
+                model_error_filepath = self.filepath_manager.get_output_path(
+                    speaking_style_folder=speaking_style_folder,
+                    speaking_style_infix=speaking_style_infix,
+                    speaker_group=group, asr_model=model)
 
-            for group in speaker_groups:
-                for model in asr_models:
-                    model_error_filepath = self.filepath_manager.get_word_error_rate_path(
-                        error_rate=error_rate,
-                        speaking_style_folder=speaking_style_folder,
-                        speaking_style_infix=speaking_style_infix,
-                        speaker_group=group, asr_model=model)
-
-                    with open(model_error_filepath, 'r') as file:
-                        # Read all lines from the file
-                        for line in file.readlines():
-                            d[error_rate][model].append(float(line))
+                d[model].append((group, pd.read_csv(model_error_filepath)))
 
         return pd.DataFrame(data=d)
