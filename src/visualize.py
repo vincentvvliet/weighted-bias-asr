@@ -56,3 +56,33 @@ def plot_statistics(data):
         plt.subplots_adjust(top=0.85)
         plt.savefig(f'plots/histogram-statistics-{rate_type}.png')
         plt.close()
+
+def plot_performance_difference(performance_diff, fpm):
+    fig, axes = plt.subplots(2, 1, figsize=(20, 12), sharex=True)
+
+    for diff_type, ax in zip(['absolute', 'relative'], axes):
+        rows = []
+        for model, groups in performance_diff.items():
+            for group, data in groups.items():
+                for item in data:
+                    if diff_type == 'absolute' and item['BaselineType'] == 'min' or diff_type == 'relative' and \
+                            item['BaselineType'] == 'min':
+                        rows.append([model, group, item['SpeakingStyle'], item['RateType'], item['PerformanceDiff'],
+                                     item['BaselineType']])
+
+        df = pd.DataFrame(rows, columns=['Model', 'Group', 'SpeakingStyle', 'RateType', 'PerformanceDiff',
+                                         'BaselineType'])
+
+        # Create a new column for combined group and speaking style for better visualization
+        df['GroupModelStyle'] = df['Model'] + '-' + df['SpeakingStyle']
+
+        sns.barplot(data=df, x='Group', y='PerformanceDiff', hue='GroupModelStyle', ax=ax, ci=None)
+        ax.set_title(f'Bias ({diff_type.capitalize()})')
+        ax.set_ylabel('Bias (Difference)' if diff_type == 'absolute' else 'Bias (Relative)')
+
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labels, title='Model-SpeakingStyle', bbox_to_anchor=(1.05, 1), loc='upper left')
+
+    plt.tight_layout()
+    plt.savefig(f'plots/performance_differences_1.png')
+    plt.show()

@@ -1,10 +1,10 @@
 import json
 
 from src.asr_output_data import AsrOutputData
-from src.bias_calculation import performance_difference
+from src.bias_calculation import performance_difference, get_performance_differences, combine_performance_differences
 from src.filepath_manager import FilepathManager
 from src.process import process_output
-from src.visualize import plot_statistics
+from src.visualize import plot_statistics, plot_performance_difference
 
 
 def main():
@@ -26,17 +26,11 @@ def main():
                 # Process model output data
                 result_per_speaker_df[key], result_per_group_df[key] = process_output(data)
 
-    # Write error rates to file
-    with open(f'results/error_rates_per_speaker.txt','w') as file:
-        file.write(json.dumps(result_per_speaker_df, indent=4))
-
-    with open(f'results/error_rates_per_group.txt','w') as file:
-        file.write(json.dumps(result_per_group_df, indent=4))
-
     # Bias Calculation
-    # TODO:
-    # performance_difference(data_frame[error_rate], filepath_manager, 'min', 'absolute')
-    # performance_difference(data_frame[error_rate], filepath_manager, 'min', 'relative')
+    performance_differences = get_performance_differences(result_per_group_df, filepath_manager)
+
+    # Plot the combined performance differences
+    plot_performance_difference(performance_differences, filepath_manager)
 
     # Data Visualization
     plot_statistics(result_per_speaker_df)
