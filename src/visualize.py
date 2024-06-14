@@ -57,21 +57,17 @@ def plot_statistics(data):
         plt.savefig(f'plots/histogram-statistics-{rate_type}.png')
         plt.close()
 
-def plot_performance_difference(performance_diff, fpm):
+def plot_performance_difference(abs_diff, rel_diff, fpm):
     fig, axes = plt.subplots(2, 1, figsize=(20, 12), sharex=True)
 
-    for diff_type, ax in zip(['absolute', 'relative'], axes):
+    for diff_type, ax, diff_data in zip(['absolute', 'relative'], axes, [abs_diff, rel_diff]):
         rows = []
-        for model, groups in performance_diff.items():
+        for model, groups in diff_data.items():
             for group, data in groups.items():
                 for item in data:
-                    if diff_type == 'absolute' and item['BaselineType'] == 'min' or diff_type == 'relative' and \
-                            item['BaselineType'] == 'min':
-                        rows.append([model, group, item['SpeakingStyle'], item['RateType'], item['PerformanceDiff'],
-                                     item['BaselineType']])
+                    rows.append([model, group, item['SpeakingStyle'], item['RateType'], item['PerformanceDiff'], item['BaselineType']])
 
-        df = pd.DataFrame(rows, columns=['Model', 'Group', 'SpeakingStyle', 'RateType', 'PerformanceDiff',
-                                         'BaselineType'])
+        df = pd.DataFrame(rows, columns=['Model', 'Group', 'SpeakingStyle', 'RateType', 'PerformanceDiff', 'BaselineType'])
 
         # Create a new column for combined group and speaking style for better visualization
         df['GroupModelStyle'] = df['Model'] + '-' + df['SpeakingStyle']
@@ -82,6 +78,8 @@ def plot_performance_difference(performance_diff, fpm):
 
     handles, labels = axes[0].get_legend_handles_labels()
     fig.legend(handles, labels, title='Model-SpeakingStyle', bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.tight_layout()
+    plt.show()
 
     plt.tight_layout()
     plt.savefig(f'plots/performance_differences_1.png')

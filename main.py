@@ -27,10 +27,10 @@ def main():
                 result_per_speaker_df[key], result_per_group_df[key] = process_output(data)
 
     # Bias Calculation
-    performance_differences = get_performance_differences(result_per_group_df, filepath_manager)
+    performance_differences_abs, performance_differences_rel = get_performance_differences(result_per_group_df, filepath_manager)
 
     # Plot the combined performance differences
-    plot_performance_difference(performance_differences, filepath_manager)
+    plot_performance_difference(performance_differences_abs, performance_differences_rel, filepath_manager)
 
     # Data Visualization
     plot_statistics(result_per_speaker_df)

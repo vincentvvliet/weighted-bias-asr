@@ -9,23 +9,46 @@ def get_performance_differences(df, fpm):
     performance_diff_rel_min = performance_difference(df, fpm, baseline_type='min', diff_type='relative')
     performance_diff_rel_avg = performance_difference(df, fpm, baseline_type='norm', diff_type='relative')
 
+    # Combine absolute values and relative values seperately
+    performance_diff_combined_abs = combine_performance_differences(performance_diff_abs_min, performance_diff_abs_avg,
+                                                                    {}, {})
+    performance_diff_combined_rel = combine_performance_differences({}, {}, performance_diff_rel_min,
+                                                                    performance_diff_rel_avg)
+
+    with open(f'results/performance_differences_combined_abs.txt','w') as file:
+        file.write(json.dumps(performance_diff_combined_abs, indent=4))
+
+    with open(f'results/performance_differences_combined_rel.txt','w') as file:
+        file.write(json.dumps(performance_diff_combined_rel, indent=4))
+
     # Return combined the performance differences
-    return combine_performance_differences(performance_diff_abs_min, performance_diff_abs_avg,
-                                                                performance_diff_rel_min, performance_diff_rel_avg)
+    return performance_diff_combined_abs, performance_diff_combined_rel
 
 
 def combine_performance_differences(abs_min, abs_avg, rel_min, rel_avg):
-    combined = {model: {} for model in abs_min.keys()}
+    combined = {}
 
-    for model in abs_min.keys():
-        for group in abs_min[model].keys():
-            combined[model][group] = abs_min[model][group] + abs_avg[model][group] + rel_min[model][group] + rel_avg[model][group]
+    # Collect all model keys from all dictionaries
+    all_models = set(abs_min.keys()) | set(abs_avg.keys()) | set(rel_min.keys()) | set(rel_avg.keys())
 
-    with open(f'results/performance_differences_combined.txt','w') as file:
-        file.write(json.dumps(combined, indent=4))
+    for model in all_models:
+        combined[model] = {}
+
+        # Collect all group keys for each model from all dictionaries
+        all_groups = (set(abs_min.get(model, {}).keys()) |
+                      set(abs_avg.get(model, {}).keys()) |
+                      set(rel_min.get(model, {}).keys()) |
+                      set(rel_avg.get(model, {}).keys()))
+
+        for group in all_groups:
+            combined[model][group] = (
+                    abs_min.get(model, {}).get(group, []) +
+                    abs_avg.get(model, {}).get(group, []) +
+                    rel_min.get(model, {}).get(group, []) +
+                    rel_avg.get(model, {}).get(group, [])
+            )
 
     return combined
-
 
 def performance_difference(df, fpm, baseline_type='min', diff_type='absolute'):
     performance_difference_df = {model: {} for model in fpm.asr_models}
