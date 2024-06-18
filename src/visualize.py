@@ -26,6 +26,9 @@ def plot_statistics_per_error_rate(data):
     groups = df['Group'].unique()
     models = df['Model'].unique()
 
+    # Colorblind-friendly palette
+    colors = sns.color_palette("colorblind", n_colors=len(groups))
+
     for rate_type in rate_types:
         fig, axes = plt.subplots(1, len(metrics), figsize=(20, 5), sharey=True)
         fig.suptitle(f'Statistics for {rate_type}', fontsize=16)
@@ -41,7 +44,7 @@ def plot_statistics_per_error_rate(data):
                 group_stats = group_stats.groupby('Model').agg({metric: 'mean'}).reindex(models).reset_index()
                 bar_positions = x + (j - len(groups) / 2) * bar_width
 
-                ax.bar(bar_positions, group_stats[metric], bar_width, label=group)
+                ax.bar(bar_positions, group_stats[metric], bar_width, label=group, color=colors[j])
 
             ax.set_xticks(x)
             ax.set_xticklabels(models)
@@ -49,6 +52,7 @@ def plot_statistics_per_error_rate(data):
             if i == 0:
                 ax.set_ylabel('Value')
             ax.legend(title='Group')
+            ax.yaxis.grid(True, linestyle='--', which='both', color='grey', alpha=0.7)
 
             # Set the same y-axis range for all subplots within the same plot
             for ax in axes:
@@ -153,7 +157,6 @@ def plot_wpb(wpb_values):
     ax.set_xticks(x)
     ax.set_xticklabels(groups)
     ax.legend()
-    ax.grid(True)
     ax.yaxis.grid(True, linestyle='--', which='both', color='grey', alpha=0.7)
 
     # Tight layout for better spacing
@@ -185,7 +188,6 @@ def plot_iwpb(iwpb_values):
     ax.set_xticks(x)
     ax.set_xticklabels(groups)
     ax.legend()
-    ax.grid(True)
     ax.yaxis.grid(True, linestyle='--', which='both', color='grey', alpha=0.7)
 
     # Tight layout for better spacing
