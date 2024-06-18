@@ -4,12 +4,12 @@ import seaborn as sns
 import numpy as np
 
 
-def plot_statistics(data):
+def plot_statistics_per_error_rate(data):
     # Convert the JSON data into a pandas DataFrame
     rows = []
     for key, value in data.items():
         model, group, speaking_style = key.split('_')
-        for rate_type in ['WER', 'MER']:
+        for rate_type in ['WER']:
             rows.append([model, group, speaking_style, rate_type, value[rate_type]])
 
     df = pd.DataFrame(rows, columns=['Model', 'Group', 'SpeakingStyle', 'RateType', 'Rates'])
@@ -20,7 +20,7 @@ def plot_statistics(data):
 
     # Plotting
     metrics = ['median', 'std', 'max', 'min']
-    rate_types = ['WER', 'MER']
+    rate_types = ['WER']
     groups = df['Group'].unique()
     models = df['Model'].unique()
 
@@ -57,30 +57,136 @@ def plot_statistics(data):
         plt.savefig(f'plots/histogram-statistics-{rate_type}.png')
         plt.close()
 
-def plot_performance_difference(abs_diff, rel_diff, fpm):
-    fig, axes = plt.subplots(2, 1, figsize=(20, 12), sharex=True)
+# TODO: output different every time
+# TODO: absolute seems smaller than relative?
+def plot_performance_difference(performance_differences_abs, performance_differences_rel, fpm):
+    # Convert the nested dictionaries into a DataFrame for easier plotting
+    def convert_to_dataframe(performance_differences):
+        records = []
+        for model, groups in performance_differences.items():
+            for group, diffs in groups.items():
+                for diff in diffs:
+                    records.append({
+                        'Model': model,
+                        'Group': group,
+                        'SpeakingStyle': diff['SpeakingStyle'],
+                        'PerformanceDiff': diff['PerformanceDiff'],
+                        'RateType': diff['RateType'],
+                        'BaselineType': diff['BaselineType'],
+                    })
+        return pd.DataFrame(records)
 
-    for diff_type, ax, diff_data in zip(['absolute', 'relative'], axes, [abs_diff, rel_diff]):
-        rows = []
-        for model, groups in diff_data.items():
-            for group, data in groups.items():
-                for item in data:
-                    rows.append([model, group, item['SpeakingStyle'], item['RateType'], item['PerformanceDiff'], item['BaselineType']])
+    df_abs = convert_to_dataframe(performance_differences_abs)
+    df_rel = convert_to_dataframe(performance_differences_rel)
 
-        df = pd.DataFrame(rows, columns=['Model', 'Group', 'SpeakingStyle', 'RateType', 'PerformanceDiff', 'BaselineType'])
+    # Create a combined column for Group and SpeakingStyle
+    df_abs['GroupSpeakingStyle'] = df_abs['Group'] + '-' + df_abs['SpeakingStyle']
+    df_rel['GroupSpeakingStyle'] = df_rel['Group'] + '-' + df_rel['SpeakingStyle']
 
-        # Create a new column for combined group and speaking style for better visualization
-        df['GroupModelStyle'] = df['Model'] + '-' + df['SpeakingStyle']
+    # Create a combined column for Model and SpeakingStyle for hue
+    df_abs['ModelSpeakingStyle'] = df_abs['Model'] + '-' + df_abs['BaselineType']
+    df_rel['ModelSpeakingStyle'] = df_rel['Model'] + '-' + df_rel['BaselineType']
 
-        sns.barplot(data=df, x='Group', y='PerformanceDiff', hue='GroupModelStyle', ax=ax, ci=None)
-        ax.set_title(f'Bias ({diff_type.capitalize()})')
-        ax.set_ylabel('Bias (Difference)' if diff_type == 'absolute' else 'Bias (Relative)')
+    # Define the color palette to ensure similar colors for same models
+    palette = {
+        'NoAug-min': 'skyblue',
+        'NoAug-norm': 'deepskyblue',
+        'SpAug-min': 'lightcoral',
+        'SpAug-norm': 'indianred',
+        'SpSpecAug-min': 'lightgreen',
+        'SpSpecAug-norm': 'seagreen'
+    }
 
-    handles, labels = axes[0].get_legend_handles_labels()
-    fig.legend(handles, labels, title='Model-SpeakingStyle', bbox_to_anchor=(1.05, 1), loc='upper left')
+    # Create the subplots
+    fig, axes = plt.subplots(2, 1, figsize=(18, 12), sharex=True)
+
+    # Plot for absolute performance differences
+    sns.barplot(data=df_abs, x='GroupSpeakingStyle', y='PerformanceDiff', hue='ModelSpeakingStyle', ax=axes[0], palette=palette, errorbar=None)
+    axes[0].set_ylabel('Bias (Absolute)')
+    axes[0].grid(True)
+    axes[0].set_ylim(0, 1)
+
+    # Plot for relative performance differences
+    sns.barplot(data=df_rel, x='GroupSpeakingStyle', y='PerformanceDiff', hue='ModelSpeakingStyle', ax=axes[1], palette=palette, errorbar=None)
+    axes[1].set_ylabel('Bias (Relative)')
+    axes[1].grid(True)
+    axes[1].set_ylim(0, 5)
+
+    # Set common x-label
+    axes[1].set_xlabel('Group')
+
+    # Adjust the legend
+    axes[0].legend(title='Model and Bias Metric', bbox_to_anchor=(1.05, 1), loc='upper left')
+    axes[1].legend(title='Model and Bias Metric', bbox_to_anchor=(1.05, 1), loc='upper left')
+
+    # Tight layout for better spacing
     plt.tight_layout()
-    plt.show()
 
+    # Save the figure
+    plt.savefig('plots/performance_differences_combined.png')
+    plt.close()
+
+
+def plot_wpb(wpb_values):
+    models = ['NoAug', 'SpSpecAug', 'SpAug']
+    groups = ['DC', 'NnT', 'DT', 'NnA', 'DOA']
+
+    x = np.arange(len(groups))
+    width = 0.2
+
+    # Colorblind-friendly palette
+    colors = sns.color_palette("colorblind", n_colors=len(models))
+
+    fig, ax = plt.subplots()
+    rects1 = ax.bar(x - width, wpb_values['NoAug'].values(), width, label='NoAug', color=colors[0])
+    rects2 = ax.bar(x, wpb_values['SpSpecAug'].values(), width, label='SpSpecAug', color=colors[1])
+    rects3 = ax.bar(x + width, wpb_values['SpAug'].values(), width, label='SpAug', color=colors[2])
+
+    # Add some text for labels, title and custom x-axis tick labels, etc.
+    ax.set_ylabel('WPB Values')
+    ax.set_title('Weighted Performance Bias by Model and Group')
+    ax.set_xticks(x)
+    ax.set_xticklabels(groups)
+    ax.legend()
+    ax.grid(True)
+    ax.yaxis.grid(True, linestyle='--', which='both', color='grey', alpha=0.7)
+
+    # Tight layout for better spacing
     plt.tight_layout()
-    plt.savefig(f'plots/performance_differences_1.png')
-    plt.show()
+
+    # Save the figure
+    plt.savefig('plots/wpb.png')
+    plt.close()
+
+
+def plot_iwpb(iwpb_values):
+    models = ['NoAug', 'SpSpecAug', 'SpAug']
+    groups = ['DC', 'NnT', 'DT', 'NnA', 'DOA']
+
+    x = np.arange(len(groups))
+    width = 0.2
+
+    # Colorblind-friendly palette
+    colors = sns.color_palette("colorblind", n_colors=len(models))
+
+    fig, ax = plt.subplots()
+    rects1 = ax.bar(x - width, iwpb_values['NoAug'].values(), width, label='NoAug', color=colors[0])
+    rects2 = ax.bar(x, iwpb_values['SpSpecAug'].values(), width, label='SpSpecAug', color=colors[1])
+    rects3 = ax.bar(x + width, iwpb_values['SpAug'].values(), width, label='SpAug', color=colors[2])
+
+    # Add some text for labels, title and custom x-axis tick labels, etc.
+    ax.set_ylabel('IWPB Values')
+    ax.set_title('Intergroup Weighted Performance Bias by Model and Group')
+    ax.set_xticks(x)
+    ax.set_xticklabels(groups)
+    ax.legend()
+    ax.grid(True)
+    ax.yaxis.grid(True, linestyle='--', which='both', color='grey', alpha=0.7)
+
+    # Tight layout for better spacing
+    plt.tight_layout()
+
+    # Save the figure
+    plt.savefig('plots/iwpb.png')
+    plt.close()
+
