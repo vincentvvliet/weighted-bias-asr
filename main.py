@@ -5,7 +5,8 @@ from src.bias_calculation import get_performance_differences, calculate_weighted
     calculate_intergroup_weighted_performance_bias, calculate_total_intergroup_weighted_performance_bias
 from src.filepath_manager import FilepathManager
 from src.process import process_wer
-from src.visualize import plot_statistics_per_error_rate, plot_performance_difference, plot_iwpb, plot_wpb
+from src.visualize import plot_statistics_per_error_rate, plot_performance_difference, plot_iwpb, plot_wpb, \
+    plot_iwpb_simulation, plot_iwpb_heatmap, plot_iwpb_3d
 
 
 def main():
@@ -38,7 +39,7 @@ def main():
     performance_differences_abs, performance_differences_rel = get_performance_differences(result_per_group_df, filepath_manager)
 
     # New bias metrics calculation
-    w1, w2, bp = 0.5, 0.5, 1  # Example weights and baseline performance, adjust as needed
+    w1, w2, bp = 0.5, 0.5, 1
     weighted_bias = calculate_weighted_performance_bias(performance_differences_abs, w1, w2, bp)
     intergroup_weighted_bias = calculate_intergroup_weighted_performance_bias(performance_differences_abs,w1, w2, bp)
     total_intergroup_weighted_bias = calculate_total_intergroup_weighted_performance_bias(performance_differences_abs, w1, w2, bp)
@@ -56,6 +57,10 @@ def main():
     # Plot the intergroup weighted performance bias
     plot_iwpb(intergroup_weighted_bias)
 
+    # Simulate weights
+    plot_iwpb_simulation(performance_differences_abs, bp)
+    plot_iwpb_heatmap(performance_differences_abs, bp)
+    plot_iwpb_3d(performance_differences_abs, bp)
 
 if __name__ == '__main__':
     main()

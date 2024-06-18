@@ -183,7 +183,7 @@ def calculate_total_intergroup_weighted_performance_bias(df, w1, w2, bp):
     :param bp: Baseline performance.
     :return: total Intergroup Weighted Performance Bias (IWPB) for each model.
     """
-    total_intergroup_weighted_bias = {model: {} for model in df.keys()}
+    total_intergroup_weighted_bias = {model: 0 for model in df.keys()}
 
     for model in df.keys():
         groups = list(df[model].keys())
@@ -200,9 +200,5 @@ def calculate_total_intergroup_weighted_performance_bias(df, w1, w2, bp):
                     total_bias += (w1 * (pd_ij / bp)) + (w2 * base_i)
 
         total_intergroup_weighted_bias[model] = total_bias / (n * (n - 1))
-
-    # Write bias to file
-    with open(f'results/bias/new/total_intergroup_weighted_performance_bias.txt', 'w') as file:
-        file.write(json.dumps(total_intergroup_weighted_bias, indent=4))
 
     return total_intergroup_weighted_bias
