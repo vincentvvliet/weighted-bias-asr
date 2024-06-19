@@ -3,7 +3,8 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-from .bias_calculation import calculate_total_intergroup_weighted_performance_bias
+from .bias_calculation import calculate_total_intergroup_weighted_performance_bias, \
+    calculate_total_weighted_performance_bias
 
 
 def plot_statistics_per_error_rate(data):
@@ -140,7 +141,7 @@ def plot_performance_difference(performance_differences_abs, performance_differe
     plt.close()
 
 
-def plot_wpb(wpb_values, fpm):
+def plot_wpb(wpb_values, fpm, w1):
     x = np.arange(len(fpm.speaker_groups))
     width = 0.15
 
@@ -155,9 +156,9 @@ def plot_wpb(wpb_values, fpm):
     rects5 = ax.bar(x + 2 * width, list(wpb_values['Whisper'].values()), width, label='Whisper', color=colors[4])
 
     # Add some text for labels, title and custom x-axis tick labels
-    ax.set_ylim(0, 0.35)
+    ax.set_ylim(0, 1)
     ax.set_ylabel('WPB Values')
-    ax.set_title('Weighted Performance Bias by Model and Group')
+    ax.set_title(f'WPB by Model and Group - w1: {w1}, w2: {1 - w1}')
     ax.set_xticks(x)
     ax.set_xticklabels(fpm.speaker_groups)
     ax.legend()
@@ -171,7 +172,7 @@ def plot_wpb(wpb_values, fpm):
     plt.close()
 
 
-def plot_iwpb(iwpb_values, fpm):
+def plot_iwpb(iwpb_values, fpm, w1):
     x = np.arange(len(fpm.speaker_groups))
     width = 0.15
 
@@ -186,9 +187,9 @@ def plot_iwpb(iwpb_values, fpm):
     rects5 = ax.bar(x + 2 * width, list(iwpb_values['Whisper'].values()), width, label='Whisper', color=colors[4])
 
     # Add some text for labels, title and custom x-axis tick labels
-    ax.set_ylim(0, 0.35)
+    ax.set_ylim(0, 1)
     ax.set_ylabel('IWPB Values')
-    ax.set_title('Intergroup Weighted Performance Bias by Model and Group')
+    ax.set_title(f'IWPB by Model and Group - w1: {w1}, w2: {1 - w1}')
     ax.set_xticks(x)
     ax.set_xticklabels(fpm.speaker_groups)
     ax.legend()
@@ -201,32 +202,76 @@ def plot_iwpb(iwpb_values, fpm):
     plt.savefig('plots/iwpb.png')
     plt.close()
 
+def plot_wpb_simulation(df, weight_range=20):
+    """
+    Plot the Weighted Performance Bias (WPB) simulation for different weights.
+    Return the w1 value for which the IWPB value was the best (minimum) for each model.
 
-def plot_iwpb_simulation(df, bp, weight_range=20):
+    :param df: DataFrame containing performance data.
+    :param bp: Baseline performance value.
+    :param weight_range: Number of weight values to simulate.
+    :return: Dictionary with model names as keys and the best (minimum) w1 value as values.
+    """
+
+    w1_values = np.linspace(0, 1, weight_range)
+    w2_values = 1 - w1_values
+    wpb_results = {model: [] for model in df.keys()}
+    best_w1_values = {model: None for model in df.keys()}
+
+    for w1, w2 in zip(w1_values, w2_values):
+        wpb = calculate_total_weighted_performance_bias(df, w1, w2)
+        for model in df.keys():
+            wpb_results[model].append(wpb[model])
+
+    plt.figure(figsize=(10, 6))
+
+    for model, values in wpb_results.items():
+        best_w1_values[model] = w1_values[np.argmin(values)]
+        plt.plot(w1_values, values, label=model)
+
+    plt.xlabel('Weight (w1)')
+    plt.ylabel('Weighted Performance Bias (IWPB)')
+    plt.title(f'WPB Simulation with {weight_range} Different Weight Distributions')
+    plt.legend()
+    plt.grid(True, linestyle='--', which='both', color='grey', alpha=0.7)
+
+    # Save the figure
+    plt.savefig('plots/wpb_simulation.png')
+    plt.close()
+
+    return np.mean(list(best_w1_values.values()))
+
+
+def plot_iwpb_simulation(df, weight_range=20):
     """
     Plot the Intergroup Weighted Performance Bias (IWPB) simulation for different weights.
+    Return the w1 value for which the IWPB value was the best (minimum) for each model.
 
-    :param w1_values: List or array of weight values for w1.
-    :param iwpb_results: Dictionary with model names as keys and lists of IWPB values as values.
+    :param df: DataFrame containing performance data.
+    :param bp: Baseline performance value.
+    :param weight_range: Number of weight values to simulate.
+    :return: Dictionary with model names as keys and the best (minimum) w1 value as values.
     """
 
     w1_values = np.linspace(0, 1, weight_range)
     w2_values = 1 - w1_values
     iwpb_results = {model: [] for model in df.keys()}
+    best_w1_values = {model: None for model in df.keys()}
 
     for w1, w2 in zip(w1_values, w2_values):
-        iwpb = calculate_total_intergroup_weighted_performance_bias(df, w1, w2, bp)
+        iwpb = calculate_total_intergroup_weighted_performance_bias(df, w1, w2)
         for model in df.keys():
             iwpb_results[model].append(iwpb[model])
 
     plt.figure(figsize=(10, 6))
 
     for model, values in iwpb_results.items():
+        best_w1_values[model] = w1_values[np.argmin(values)]
         plt.plot(w1_values, values, label=model)
 
     plt.xlabel('Weight (w1)')
     plt.ylabel('Intergroup Weighted Performance Bias (IWPB)')
-    plt.title('IWPB Simulation with Different Weights')
+    plt.title(f'IWPB Simulation with {weight_range} Different Weight Distributions')
     plt.legend()
     plt.grid(True, linestyle='--', which='both', color='grey', alpha=0.7)
 
@@ -234,8 +279,10 @@ def plot_iwpb_simulation(df, bp, weight_range=20):
     plt.savefig('plots/iwpb_simulation.png')
     plt.close()
 
+    return np.mean(list(best_w1_values.values()))
 
-def plot_iwpb_heatmap(df, bp, weight_range=20):
+
+def plot_iwpb_heatmap(df, weight_range=20):
     """
     Plot a heatmap of the Intergroup Weighted Performance Bias (IWPB) for different weights.
 
@@ -250,7 +297,7 @@ def plot_iwpb_heatmap(df, bp, weight_range=20):
     heatmap_data = np.zeros((weight_range, len(models)))
 
     for idx, (w1, w2) in enumerate(zip(w1_values, w2_values)):
-        iwpb = calculate_total_intergroup_weighted_performance_bias(df, w1, w2, bp)
+        iwpb = calculate_total_intergroup_weighted_performance_bias(df, w1, w2)
         for model_idx, model in enumerate(models):
             heatmap_data[idx, model_idx] = iwpb[model]
 
@@ -265,7 +312,7 @@ def plot_iwpb_heatmap(df, bp, weight_range=20):
     plt.close()
 
 
-def plot_iwpb_3d(df, bp, weight_range=20):
+def plot_iwpb_3d(df, weight_range=20):
     """
     Plot a 3D surface plot of the Intergroup Weighted Performance Bias (IWPB) for different weights.
 
@@ -283,7 +330,7 @@ def plot_iwpb_3d(df, bp, weight_range=20):
     for model in models:
         iwpb_values = []
         for w1, w2 in zip(w1_values, w2_values):
-            iwpb = calculate_total_intergroup_weighted_performance_bias(df, w1, w2, bp)
+            iwpb = calculate_total_intergroup_weighted_performance_bias(df, w1, w2)
             iwpb_values.append(iwpb[model])
 
         ax.plot(w1_values, w2_values, iwpb_values, label=model)

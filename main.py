@@ -6,7 +6,7 @@ from src.bias_calculation import get_performance_differences, calculate_weighted
 from src.filepath_manager import FilepathManager
 from src.process import read_data
 from src.visualize import plot_statistics_per_error_rate, plot_performance_difference, plot_iwpb, plot_wpb, \
-    plot_iwpb_simulation, plot_iwpb_heatmap, plot_iwpb_3d
+    plot_iwpb_simulation, plot_iwpb_heatmap, plot_iwpb_3d, plot_wpb_simulation
 
 
 def main():
@@ -29,12 +29,19 @@ def main():
     # Bias Calculation
     performance_differences_abs, performance_differences_rel = get_performance_differences(result_per_group_df, filepath_manager)
 
+    # Simulate weights
+    plot_iwpb_heatmap(performance_differences_abs)
+    plot_iwpb_3d(performance_differences_abs)
+    iwpb_w1 = plot_iwpb_simulation(performance_differences_abs)
+    iwpb_w2 = 1 - iwpb_w1
+
+    wpb_w1 = plot_wpb_simulation(performance_differences_abs)
+    wpb_w2 = 1 - wpb_w1
+
     # New bias metrics calculation
-    w1, w2, bp = 1, 0, 1
-    # TODO: replace bp with actual value
-    weighted_bias = calculate_weighted_performance_bias(performance_differences_abs, w1, w2, bp)
-    intergroup_weighted_bias = calculate_intergroup_weighted_performance_bias(performance_differences_abs,w1, w2, bp)
-    total_intergroup_weighted_bias = calculate_total_intergroup_weighted_performance_bias(performance_differences_abs, w1, w2, bp)
+    weighted_bias = calculate_weighted_performance_bias(performance_differences_abs, wpb_w1, wpb_w2)
+    intergroup_weighted_bias = calculate_intergroup_weighted_performance_bias(performance_differences_abs,iwpb_w1, iwpb_w2)
+    total_intergroup_weighted_bias = calculate_total_intergroup_weighted_performance_bias(performance_differences_abs, iwpb_w1, iwpb_w2)
 
     # Data Visualization
     # Plot the combined performance differences
@@ -44,15 +51,10 @@ def main():
     plot_statistics_per_error_rate(result_per_speaker_df)
 
     # Plot the weighted performance bias
-    plot_wpb(weighted_bias, filepath_manager)
+    plot_wpb(weighted_bias, filepath_manager, wpb_w1)
 
     # Plot the intergroup weighted performance bias
-    plot_iwpb(intergroup_weighted_bias, filepath_manager)
-
-    # Simulate weights
-    plot_iwpb_simulation(performance_differences_abs, bp)
-    plot_iwpb_heatmap(performance_differences_abs, bp)
-    plot_iwpb_3d(performance_differences_abs, bp)
+    plot_iwpb(intergroup_weighted_bias, filepath_manager, iwpb_w1)
 
 if __name__ == '__main__':
     main()

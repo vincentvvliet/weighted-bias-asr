@@ -41,7 +41,6 @@ def convert_to_bias_values(df):
     return df
 
 
-# TODO: Fix combine
 def combine_performance_differences(abs_min, abs_norm, rel_min, rel_norm):
     combined = {}
 
@@ -124,11 +123,11 @@ def performance_difference(df, fpm, baseline_type='min', diff_type='absolute'):
     return performance_difference_df
 
 
-def calculate_weighted_performance_bias(df, w1, w2, bp):
+def calculate_weighted_performance_bias(df, w1, w2):
     """
     Calculate Weighted Performance Bias (WPB).
 
-    :param df: The performance difference dataframe.
+    :param df: The relative performance difference dataframe.
     :param w1: Weight for performance difference.
     :param w2: Weight for base performance.
     :param bp: Baseline performance.
@@ -141,23 +140,24 @@ def calculate_weighted_performance_bias(df, w1, w2, bp):
             n = len(df[model][group])
             total_bias = 0
             for record in df[model][group]:
-                pd_i = abs(record['PerformanceDiff'])
+                bp = record['BaselinePerformance']
+                pd_i = record['PerformanceDiff']
                 base_i = record['BasePerformance']
                 total_bias += (w1 * (pd_i / bp)) + (w2 * base_i)
 
             weighted_bias[model][group] = total_bias / n
 
-    with open(f'results/bias/new/weighted_performance_bias.txt', 'w') as file:
+    with open(f'results/bias/new/weighted_performance_bias.json', 'w') as file:
         file.write(json.dumps(weighted_bias, indent=4))
 
     return weighted_bias
 
 
-def calculate_intergroup_weighted_performance_bias(df, w1, w2, bp):
+def calculate_intergroup_weighted_performance_bias(df, w1, w2):
     """
     Calculate Intergroup Weighted Performance Bias (IWPB).
 
-    :param df: The performance difference dataframe.
+    :param df: The absolute performance difference dataframe.
     :param w1: Weight for performance difference.
     :param w2: Weight for base performance.
     :param bp: Baseline performance.
@@ -178,6 +178,7 @@ def calculate_intergroup_weighted_performance_bias(df, w1, w2, bp):
             for j in range(n):
                 if i != j:
                     group_j = groups[j]
+                    bp = df[model][group_j][0]['BaselinePerformance']
                     base_j = df[model][group_j][0]['BasePerformance']  # Base performance for group j
                     pd_ij = abs(base_i - base_j)
                     total_bias += (w1 * (pd_ij / bp)) + (w2 * base_i)
@@ -185,13 +186,40 @@ def calculate_intergroup_weighted_performance_bias(df, w1, w2, bp):
 
             intergroup_weighted_bias[model][group_i] = total_bias / count if count != 0 else 0
 
-    with open(f'results/bias/new/intergroup_weighted_performance_bias.txt', 'w') as file:
+    with open(f'results/bias/new/intergroup_weighted_performance_bias.json', 'w') as file:
         file.write(json.dumps(intergroup_weighted_bias, indent=4))
 
     return intergroup_weighted_bias
 
 
-def calculate_total_intergroup_weighted_performance_bias(df, w1, w2, bp):
+def calculate_total_weighted_performance_bias(df, w1, w2):
+    """
+    Calculate total Weighted Performance Bias (WPB).
+
+    :param df: The performance difference dataframe.
+    :param w1: Weight for performance difference.
+    :param w2: Weight for base performance.
+    :param bp: Baseline performance.
+    :return: total Weighted Performance Bias (IWPB) for each model.
+    """
+    total_weighted_bias = {model: 0 for model in df.keys()}
+
+    for model in df.keys():
+        for group in df[model].keys():
+            n = len(df[model][group])
+            total_bias = 0
+            for record in df[model][group]:
+                bp = record['BaselinePerformance']
+                pd_i = record['PerformanceDiff']
+                base_i = record['BasePerformance']
+                total_bias += (w1 * (pd_i / bp)) + (w2 * base_i)
+
+        total_weighted_bias[model] = total_bias / n
+
+    return total_weighted_bias
+
+
+def calculate_total_intergroup_weighted_performance_bias(df, w1, w2):
     """
     Calculate total Intergroup Weighted Performance Bias (IWPB).
 
@@ -213,6 +241,7 @@ def calculate_total_intergroup_weighted_performance_bias(df, w1, w2, bp):
 
             for j in range(n):
                 if i != j:
+                    bp = df[model][groups[j]][0]['BaselinePerformance']
                     base_j = df[model][groups[j]][0]['BasePerformance']  # Base performance for group j
                     pd_ij = abs(base_i - base_j)
                     total_bias += (w1 * (pd_ij / bp)) + (w2 * base_i)
