@@ -66,7 +66,7 @@ def plot_statistics_per_error_rate(data):
 
 # TODO: output different every time
 # TODO: absolute seems smaller than relative?
-def plot_performance_difference(performance_differences_abs, performance_differences_rel, fpm):
+def plot_performance_difference(performance_differences_abs, performance_differences_rel):
     # Convert the nested dictionaries into a DataFrame for easier plotting
     def convert_to_dataframe(performance_differences):
         records = []
@@ -101,7 +101,11 @@ def plot_performance_difference(performance_differences_abs, performance_differe
         'SpAug-min': 'lightcoral',
         'SpAug-norm': 'indianred',
         'SpSpecAug-min': 'lightgreen',
-        'SpSpecAug-norm': 'seagreen'
+        'SpSpecAug-norm': 'seagreen',
+        'FT-Wpr-min': 'lightgreen',
+        'FT-Wpr-norm': 'seagreen',
+        'Whisper-min': 'lightgreen',
+        'Whisper-norm': 'seagreen'
     }
 
     # Create the subplots
@@ -136,26 +140,26 @@ def plot_performance_difference(performance_differences_abs, performance_differe
     plt.close()
 
 
-def plot_wpb(wpb_values):
-    models = ['NoAug', 'SpSpecAug', 'SpAug']
-    groups = ['DC', 'NnT', 'DT', 'NnA', 'DOA']
-
-    x = np.arange(len(groups))
-    width = 0.2
+def plot_wpb(wpb_values, fpm):
+    x = np.arange(len(fpm.speaker_groups))
+    width = 0.15
 
     # Colorblind-friendly palette
-    colors = sns.color_palette("colorblind", n_colors=len(models))
+    colors = sns.color_palette("colorblind", n_colors=len(fpm.asr_models))
 
     fig, ax = plt.subplots()
-    rects1 = ax.bar(x - width, wpb_values['NoAug'].values(), width, label='NoAug', color=colors[0])
-    rects2 = ax.bar(x, wpb_values['SpSpecAug'].values(), width, label='SpSpecAug', color=colors[1])
-    rects3 = ax.bar(x + width, wpb_values['SpAug'].values(), width, label='SpAug', color=colors[2])
+    rects1 = ax.bar(x - 2 * width, list(wpb_values['NoAug'].values()), width, label='NoAug', color=colors[0])
+    rects2 = ax.bar(x - width, list(wpb_values['SpSpecAug'].values()), width, label='SpSpecAug', color=colors[1])
+    rects3 = ax.bar(x, list(wpb_values['SpAug'].values()), width, label='SpAug', color=colors[2])
+    rects4 = ax.bar(x + width, list(wpb_values['FT-Wpr'].values()), width, label='FT-Wpr', color=colors[3])
+    rects5 = ax.bar(x + 2 * width, list(wpb_values['Whisper'].values()), width, label='Whisper', color=colors[4])
 
-    # Add some text for labels, title and custom x-axis tick labels, etc.
+    # Add some text for labels, title and custom x-axis tick labels
+    ax.set_ylim(0, 0.35)
     ax.set_ylabel('WPB Values')
     ax.set_title('Weighted Performance Bias by Model and Group')
     ax.set_xticks(x)
-    ax.set_xticklabels(groups)
+    ax.set_xticklabels(fpm.speaker_groups)
     ax.legend()
     ax.yaxis.grid(True, linestyle='--', which='both', color='grey', alpha=0.7)
 
@@ -167,26 +171,26 @@ def plot_wpb(wpb_values):
     plt.close()
 
 
-def plot_iwpb(iwpb_values):
-    models = ['NoAug', 'SpSpecAug', 'SpAug']
-    groups = ['DC', 'NnT', 'DT', 'NnA', 'DOA']
-
-    x = np.arange(len(groups))
-    width = 0.2
+def plot_iwpb(iwpb_values, fpm):
+    x = np.arange(len(fpm.speaker_groups))
+    width = 0.15
 
     # Colorblind-friendly palette
-    colors = sns.color_palette("colorblind", n_colors=len(models))
+    colors = sns.color_palette("colorblind", n_colors=len(fpm.asr_models))
 
     fig, ax = plt.subplots()
-    rects1 = ax.bar(x - width, iwpb_values['NoAug'].values(), width, label='NoAug', color=colors[0])
-    rects2 = ax.bar(x, iwpb_values['SpSpecAug'].values(), width, label='SpSpecAug', color=colors[1])
-    rects3 = ax.bar(x + width, iwpb_values['SpAug'].values(), width, label='SpAug', color=colors[2])
+    rects1 = ax.bar(x - 2 * width, list(iwpb_values['NoAug'].values()), width, label='NoAug', color=colors[0])
+    rects2 = ax.bar(x - width, list(iwpb_values['SpSpecAug'].values()), width, label='SpSpecAug', color=colors[1])
+    rects3 = ax.bar(x, list(iwpb_values['SpAug'].values()), width, label='SpAug', color=colors[2])
+    rects4 = ax.bar(x + width, list(iwpb_values['FT-Wpr'].values()), width, label='FT-Wpr', color=colors[3])
+    rects5 = ax.bar(x + 2 * width, list(iwpb_values['Whisper'].values()), width, label='Whisper', color=colors[4])
 
-    # Add some text for labels, title and custom x-axis tick labels, etc.
+    # Add some text for labels, title and custom x-axis tick labels
+    ax.set_ylim(0, 0.35)
     ax.set_ylabel('IWPB Values')
     ax.set_title('Intergroup Weighted Performance Bias by Model and Group')
     ax.set_xticks(x)
-    ax.set_xticklabels(groups)
+    ax.set_xticklabels(fpm.speaker_groups)
     ax.legend()
     ax.yaxis.grid(True, linestyle='--', which='both', color='grey', alpha=0.7)
 

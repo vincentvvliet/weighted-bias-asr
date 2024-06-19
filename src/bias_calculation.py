@@ -4,47 +4,65 @@ import json
 
 def get_performance_differences(df, fpm):
     performance_diff_abs_min = performance_difference(df, fpm, baseline_type='min', diff_type='absolute')
-    performance_diff_abs_avg = performance_difference(df, fpm, baseline_type='norm', diff_type='absolute')
+    performance_diff_abs_norm = performance_difference(df, fpm, baseline_type='norm', diff_type='absolute')
     performance_diff_rel_min = performance_difference(df, fpm, baseline_type='min', diff_type='relative')
-    performance_diff_rel_avg = performance_difference(df, fpm, baseline_type='norm', diff_type='relative')
+    performance_diff_rel_norm = performance_difference(df, fpm, baseline_type='norm', diff_type='relative')
 
     # Combine absolute values and relative values seperately
-    performance_diff_combined_abs = combine_performance_differences(performance_diff_abs_min, performance_diff_abs_avg,
+    performance_diff_combined_abs = combine_performance_differences(performance_diff_abs_min, performance_diff_abs_norm,
                                                                     {}, {})
     performance_diff_combined_rel = combine_performance_differences({}, {}, performance_diff_rel_min,
-                                                                    performance_diff_rel_avg)
+                                                                    performance_diff_rel_norm)
 
-    with open(f'results/bias/old/performance_differences_combined_abs.txt','w') as file:
+    bias = {'abs_min': convert_to_bias_values(performance_diff_abs_min.copy()),
+            'abs_norm': convert_to_bias_values(performance_diff_abs_norm.copy()),
+            'rel_min': convert_to_bias_values(performance_diff_rel_min.copy()),
+            'rel_norm': convert_to_bias_values(performance_diff_rel_norm.copy())}
+
+    with open(f'results/bias/old/performance_difference_values.json','w') as file:
+        json.dump(bias, file)
+
+
+    with open(f'results/bias/old/performance_differences_combined_abs.json','w') as file:
         file.write(json.dumps(performance_diff_combined_abs, indent=4))
 
-    with open(f'results/bias/old/performance_differences_combined_rel.txt','w') as file:
+    with open(f'results/bias/old/performance_differences_combined_rel.json','w') as file:
         file.write(json.dumps(performance_diff_combined_rel, indent=4))
 
     # Return combined the performance differences
     return performance_diff_combined_abs, performance_diff_combined_rel
 
 
-def combine_performance_differences(abs_min, abs_avg, rel_min, rel_avg):
+def convert_to_bias_values(df):
+    for model in df.keys():
+        for group in df[model].keys():
+            df[model][group] = df[model][group][0]['PerformanceDiff']
+
+    return df
+
+
+# TODO: Fix combine
+def combine_performance_differences(abs_min, abs_norm, rel_min, rel_norm):
     combined = {}
 
     # Collect all model keys from all dictionaries
-    all_models = set(abs_min.keys()) | set(abs_avg.keys()) | set(rel_min.keys()) | set(rel_avg.keys())
+    all_models = set(abs_min.keys()) | set(abs_norm.keys()) | set(rel_min.keys()) | set(rel_norm.keys())
 
     for model in all_models:
         combined[model] = {}
 
         # Collect all group keys for each model from all dictionaries
         all_groups = (set(abs_min.get(model, {}).keys()) |
-                      set(abs_avg.get(model, {}).keys()) |
+                      set(abs_norm.get(model, {}).keys()) |
                       set(rel_min.get(model, {}).keys()) |
-                      set(rel_avg.get(model, {}).keys()))
+                      set(rel_norm.get(model, {}).keys()))
 
         for group in all_groups:
             combined[model][group] = (
                     abs_min.get(model, {}).get(group, []) +
-                    abs_avg.get(model, {}).get(group, []) +
+                    abs_norm.get(model, {}).get(group, []) +
                     rel_min.get(model, {}).get(group, []) +
-                    rel_avg.get(model, {}).get(group, [])
+                    rel_norm.get(model, {}).get(group, [])
             )
 
     return combined
@@ -100,7 +118,7 @@ def performance_difference(df, fpm, baseline_type='min', diff_type='absolute'):
                         "BaselineType": baseline_type
                     })
 
-    with open(f'results/bias/old/performance_difference_{baseline_type}_{diff_type}.txt','w') as file:
+    with open(f'results/bias/old/performance_difference_{baseline_type}_{diff_type}.json','w') as file:
         file.write(json.dumps(performance_difference_df, indent=4))
 
     return performance_difference_df
@@ -123,7 +141,7 @@ def calculate_weighted_performance_bias(df, w1, w2, bp):
             n = len(df[model][group])
             total_bias = 0
             for record in df[model][group]:
-                pd_i = record['PerformanceDiff']
+                pd_i = abs(record['PerformanceDiff'])
                 base_i = record['BasePerformance']
                 total_bias += (w1 * (pd_i / bp)) + (w2 * base_i)
 

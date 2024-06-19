@@ -44,6 +44,36 @@
     "SpSpecAug_NnA_Rd": {
         "WER": 0.6010362694300518
     },
+    "FT-Wpr_DC_Rd": {
+        "WER": 0.3431372549019608
+    },
+    "FT-Wpr_DOA_Rd": {
+        "WER": 0.2397987702627166
+    },
+    "FT-Wpr_DT_Rd": {
+        "WER": 0.19577308120133483
+    },
+    "FT-Wpr_NnT_Rd": {
+        "WER": 0.5611814345991561
+    },
+    "FT-Wpr_NnA_Rd": {
+        "WER": 0.6134903640256959
+    },
+    "Whisper_DC_Rd": {
+        "WER": 0.3391494002181025
+    },
+    "Whisper_DOA_Rd": {
+        "WER": 0.305757406372275
+    },
+    "Whisper_DT_Rd": {
+        "WER": 0.23692992213570635
+    },
+    "Whisper_NnT_Rd": {
+        "WER": 0.4705251875669882
+    },
+    "Whisper_NnA_Rd": {
+        "WER": 0.5231431646932185
+    },
     "NoAug_DC_HMI": {
         "WER": 0.515625
     },
@@ -88,5 +118,35 @@
     },
     "SpSpecAug_NnA_HMI": {
         "WER": 0.6008771929824561
+    },
+    "FT-Wpr_DC_HMI": {
+        "WER": 0.4482758620689655
+    },
+    "FT-Wpr_DOA_HMI": {
+        "WER": 0.457286432160804
+    },
+    "FT-Wpr_DT_HMI": {
+        "WER": 0.4174757281553398
+    },
+    "FT-Wpr_NnT_HMI": {
+        "WER": 0.6312056737588653
+    },
+    "FT-Wpr_NnA_HMI": {
+        "WER": 0.6162162162162163
+    },
+    "Whisper_DC_HMI": {
+        "WER": 0.5588235294117647
+    },
+    "Whisper_DOA_HMI": {
+        "WER": 0.4720101781170484
+    },
+    "Whisper_DT_HMI": {
+        "WER": 0.43
+    },
+    "Whisper_NnT_HMI": {
+        "WER": 0.6212121212121212
+    },
+    "Whisper_NnA_HMI": {
+        "WER": 0.6666666666666666
     }
 }

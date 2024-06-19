@@ -1,3 +1,15 @@
+def read_data(asr_output_data, filepath_manager, result_per_group_df, result_per_speaker_df):
+    for speaking_style_index in range(0, 2):
+        data_frame = asr_output_data.build_dataframe(speaking_style_index)
+
+        for model in filepath_manager.asr_models:
+            for _, data in data_frame[model].items():
+                group = data[0]
+                key = model + '_' + group + '_' + filepath_manager.speaking_style_folders[speaking_style_index]
+
+                # Process model output data
+                result_per_speaker_df[key], result_per_group_df[key] = process_wer(data)
+
 def process_wer(df):
     total_substitutions = 0
     total_insertions = 0
