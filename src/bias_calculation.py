@@ -1,6 +1,6 @@
 import pandas as pd
 import json
-
+import numpy as np
 
 def get_performance_differences(df, fpm):
     performance_diff_abs_min = performance_difference(df, fpm, baseline_type='min', diff_type='absolute')
@@ -14,14 +14,21 @@ def get_performance_differences(df, fpm):
     performance_diff_combined_rel = combine_performance_differences({}, {}, performance_diff_rel_min,
                                                                     performance_diff_rel_norm)
 
-    bias = {'abs_min': convert_to_bias_values(performance_diff_abs_min.copy()),
-            'abs_norm': convert_to_bias_values(performance_diff_abs_norm.copy()),
-            'rel_min': convert_to_bias_values(performance_diff_rel_min.copy()),
-            'rel_norm': convert_to_bias_values(performance_diff_rel_norm.copy())}
+    bias = {'abs_min': convert_to_bias_values(performance_diff_abs_min, fpm),
+            'abs_norm': convert_to_bias_values(performance_diff_abs_norm, fpm),
+            'rel_min': convert_to_bias_values(performance_diff_rel_min, fpm),
+            'rel_norm': convert_to_bias_values(performance_diff_rel_norm, fpm)}
 
-    with open(f'results/bias/old/performance_difference_values.json','w') as file:
+    overall_bias = {'abs_min': convert_to_bias_values(performance_diff_abs_min, fpm, True),
+            'abs_norm': convert_to_bias_values(performance_diff_abs_norm, fpm, True),
+            'rel_min': convert_to_bias_values(performance_diff_rel_min, fpm, True),
+            'rel_norm': convert_to_bias_values(performance_diff_rel_norm, fpm, True)}
+
+    with open(f'results/bias/old/performance_difference_bias.json','w') as file:
         json.dump(bias, file)
 
+    with open(f'results/bias/old/overall_performance_difference_bias.json','w') as file:
+        json.dump(overall_bias, file)
 
     with open(f'results/bias/old/performance_differences_combined_abs.json','w') as file:
         file.write(json.dumps(performance_diff_combined_abs, indent=4))
@@ -33,12 +40,21 @@ def get_performance_differences(df, fpm):
     return performance_diff_combined_abs, performance_diff_combined_rel
 
 
-def convert_to_bias_values(df):
-    for model in df.keys():
-        for group in df[model].keys():
-            df[model][group] = df[model][group][0]['PerformanceDiff']
+def convert_to_bias_values(df, fpm, overall=False):
+    bias = {speech_type: {model: {} for model in fpm.asr_models} for speech_type in fpm.speaking_style_folders}
+    overall_bias = {speech_type: {model: 0.0 for model in fpm.asr_models} for speech_type in fpm.speaking_style_folders}
 
-    return df
+    for index, speech_type in enumerate(fpm.speaking_style_folders):
+        for model in df.keys():
+            for group in df[model].keys():
+                if df[model][group][index]['SpeakingStyle'] == speech_type:
+                    bias_value = df[model][group][index]['PerformanceDiff']
+                    bias[speech_type][model][group] = float("{0:.2f}".format(100 * bias_value))
+            # Store overall bias
+            average_bias = sum(bias[speech_type][model].values()) / len(bias[speech_type][model])
+            overall_bias[speech_type][model] = float("{0:.2f}".format(average_bias))
+
+    return overall_bias if overall else bias
 
 
 def combine_performance_differences(abs_min, abs_norm, rel_min, rel_norm):
@@ -99,9 +115,9 @@ def performance_difference(df, fpm, baseline_type='min', diff_type='absolute'):
                     group = row['Group']
 
                     if diff_type == 'absolute':
-                        performance_diff = current_performance - baseline_performance
+                        performance_diff = abs(current_performance - baseline_performance)
                     elif diff_type == 'relative':
-                        performance_diff = (current_performance - baseline_performance) / baseline_performance
+                        performance_diff = abs((current_performance - baseline_performance) / baseline_performance)
                     else:
                         raise ValueError("Invalid diff_type. Use 'absolute' or 'relative'.")
 
@@ -127,7 +143,7 @@ def calculate_weighted_performance_bias(df, w1, w2):
     """
     Calculate Weighted Performance Bias (WPB).
 
-    :param df: The relative performance difference dataframe.
+    :param df: The absolute performance difference dataframe.
     :param w1: Weight for performance difference.
     :param w2: Weight for base performance.
     :param bp: Baseline performance.
@@ -151,6 +167,38 @@ def calculate_weighted_performance_bias(df, w1, w2):
         file.write(json.dumps(weighted_bias, indent=4))
 
     return weighted_bias
+
+
+def calculate_overall_weighted_performance_bias(df, w1, w2, fpm):
+    """
+    Calculate overall Weighted Performance Bias (WPB).
+
+    :param df: The absolute performance difference dataframe.
+    :param w1: Weight for performance difference.
+    :param w2: Weight for base performance.
+    :param bp: Baseline performance.
+    :return: overall Weighted Performance Bias (WPB) for each model and group.
+    """
+    overall_weighted_bias = {speech_type: {model: 0.0 for model in fpm.asr_models} for speech_type in fpm.speaking_style_folders}
+
+    # Setup dataframe
+    for index, speech_type in enumerate(fpm.speaking_style_folders):
+        for model in df.keys():
+            total_bias = 0
+            for group in df[model].keys():
+                record = df[model][group][index]
+                bp = record['BaselinePerformance']
+                pd_i = record['PerformanceDiff']
+                base_i = record['BasePerformance']
+                total_bias += (w1 * (pd_i / bp)) + (w2 * base_i)
+
+            # After total bias is known
+            overall_weighted_bias[speech_type][model] = float("{0:.2f}".format(100 * total_bias / len(fpm.speaker_groups)))
+
+    with open(f'results/bias/new/overall_weighted_performance_bias.json', 'w') as file:
+        file.write(json.dumps(overall_weighted_bias, indent=4))
+
+    return overall_weighted_bias
 
 
 def calculate_intergroup_weighted_performance_bias(df, w1, w2):
@@ -188,6 +236,55 @@ def calculate_intergroup_weighted_performance_bias(df, w1, w2):
 
     with open(f'results/bias/new/intergroup_weighted_performance_bias.json', 'w') as file:
         file.write(json.dumps(intergroup_weighted_bias, indent=4))
+
+    return intergroup_weighted_bias
+
+
+def calculate_overall_intergroup_weighted_performance_bias(df, w1, w2, fpm):
+    """
+    Calculate overall Intergroup Weighted Performance Bias (IWPB) per speech type.
+
+    :param df: The performance difference dataframe.
+    :param w1: Weight for performance difference.
+    :param w2: Weight for base performance.
+    :param bp: Baseline performance.
+    :return: total Intergroup Weighted Performance Bias (IWPB) for each model.
+    """
+    intergroup_weighted_bias = {speech_type: {model: {} for model in fpm.asr_models} for speech_type in fpm.speaking_style_folders}
+    overall_intergroup_weighted_bias = {speech_type: {model: 0.0 for model in fpm.asr_models} for speech_type in
+                             fpm.speaking_style_folders}
+
+    for index, speech_type in enumerate(fpm.speaking_style_folders):
+        for model in df.keys():
+            groups = list(df[model].keys())
+            n = len(groups)
+
+            for i in range(n):
+                group_i = groups[i]
+                base_i = df[model][group_i][index]['BasePerformance']  # Base performance for group i
+                total_bias = 0
+                count = 0
+
+                for j in range(n):
+                    if i != j:
+                        group_j = groups[j]
+                        bp = df[model][group_j][index]['BaselinePerformance']
+                        base_j = df[model][group_j][index]['BasePerformance']  # Base performance for group j
+                        pd_ij = abs(base_i - base_j)
+                        total_bias += (w1 * (pd_ij / bp)) + (w2 * base_i)
+                        count += 1
+
+                if df[model][group_i][index]['SpeakingStyle'] == speech_type:
+                    intergroup_weighted_bias[speech_type][model][group_i] = total_bias / count if count != 0 else 0
+
+    # Calculate overall bias
+    for index, speech_type in enumerate(fpm.speaking_style_folders):
+        for model in df.keys():
+            average_bias = sum(intergroup_weighted_bias[speech_type][model].values()) / len(intergroup_weighted_bias[speech_type][model])
+            overall_intergroup_weighted_bias[speech_type][model] = float("{0:.2f}".format(100 * average_bias))
+
+    with open(f'results/bias/new/overall_intergroup_weighted_performance_bias.json', 'w') as file:
+        file.write(json.dumps(overall_intergroup_weighted_bias, indent=4))
 
     return intergroup_weighted_bias
 

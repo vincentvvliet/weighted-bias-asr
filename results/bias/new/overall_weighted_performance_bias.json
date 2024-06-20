@@ -1,0 +1,16 @@
+{
+    "Rd": {
+        "NoAug": 47.96,
+        "SpAug": 49.38,
+        "SpSpecAug": 49.98,
+        "FT-Wpr": 51.17,
+        "Whisper": 41.67
+    },
+    "HMI": {
+        "NoAug": 46.54,
+        "SpAug": 47.57,
+        "SpSpecAug": 46.04,
+        "FT-Wpr": 45.76,
+        "Whisper": 49.55
+    }
+}

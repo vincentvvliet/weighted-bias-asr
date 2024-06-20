@@ -2,7 +2,8 @@ import json
 
 from src.asr_output_data import AsrOutputData
 from src.bias_calculation import get_performance_differences, calculate_weighted_performance_bias, \
-    calculate_intergroup_weighted_performance_bias, calculate_total_intergroup_weighted_performance_bias
+    calculate_intergroup_weighted_performance_bias, calculate_total_intergroup_weighted_performance_bias, \
+    calculate_overall_weighted_performance_bias, calculate_overall_intergroup_weighted_performance_bias
 from src.filepath_manager import FilepathManager
 from src.process import read_data
 from src.visualize import plot_statistics_per_error_rate, plot_performance_difference, plot_iwpb, plot_wpb, \
@@ -40,7 +41,10 @@ def main():
 
     # New bias metrics calculation
     weighted_bias = calculate_weighted_performance_bias(performance_differences_abs, wpb_w1, wpb_w2)
+    overall_bias = calculate_overall_weighted_performance_bias(performance_differences_abs, wpb_w1, wpb_w2, filepath_manager)
     intergroup_weighted_bias = calculate_intergroup_weighted_performance_bias(performance_differences_abs,iwpb_w1, iwpb_w2)
+    overall_intergroup_weighted_bias = calculate_overall_intergroup_weighted_performance_bias(performance_differences_abs, iwpb_w1,
+                                                                              iwpb_w2, filepath_manager)
     total_intergroup_weighted_bias = calculate_total_intergroup_weighted_performance_bias(performance_differences_abs, iwpb_w1, iwpb_w2)
 
     # Data Visualization

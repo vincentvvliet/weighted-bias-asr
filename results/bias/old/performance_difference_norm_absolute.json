@@ -4,7 +4,7 @@
             {
                 "RateType": "WER",
                 "SpeakingStyle": "Rd",
-                "PerformanceDiff": -0.02759226116732849,
+                "PerformanceDiff": 0.02759226116732849,
                 "BasePerformance": 0.37566137566137564,
                 "BaselinePerformance": 0.40325363682870413,
                 "BaselineType": "norm"
@@ -12,7 +12,7 @@
             {
                 "RateType": "WER",
                 "SpeakingStyle": "HMI",
-                "PerformanceDiff": -0.004283001473379566,
+                "PerformanceDiff": 0.004283001473379566,
                 "BasePerformance": 0.515625,
                 "BaselinePerformance": 0.5199080014733796,
                 "BaselineType": "norm"
@@ -22,7 +22,7 @@
             {
                 "RateType": "WER",
                 "SpeakingStyle": "Rd",
-                "PerformanceDiff": -0.14472829120658431,
+                "PerformanceDiff": 0.14472829120658431,
                 "BasePerformance": 0.2585253456221198,
                 "BaselinePerformance": 0.40325363682870413,
                 "BaselineType": "norm"
@@ -30,7 +30,7 @@
             {
                 "RateType": "WER",
                 "SpeakingStyle": "HMI",
-                "PerformanceDiff": -0.10307021913251713,
+                "PerformanceDiff": 0.10307021913251713,
                 "BasePerformance": 0.41683778234086244,
                 "BaselinePerformance": 0.5199080014733796,
                 "BaselineType": "norm"
@@ -40,7 +40,7 @@
             {
                 "RateType": "WER",
                 "SpeakingStyle": "Rd",
-                "PerformanceDiff": -0.1773277109027782,
+                "PerformanceDiff": 0.1773277109027782,
                 "BasePerformance": 0.22592592592592592,
                 "BaselinePerformance": 0.40325363682870413,
                 "BaselineType": "norm"
@@ -48,7 +48,7 @@
             {
                 "RateType": "WER",
                 "SpeakingStyle": "HMI",
-                "PerformanceDiff": -0.10209978229529737,
+                "PerformanceDiff": 0.10209978229529737,
                 "BasePerformance": 0.4178082191780822,
                 "BaselinePerformance": 0.5199080014733796,
                 "BaselineType": "norm"
@@ -96,7 +96,7 @@
             {
                 "RateType": "WER",
                 "SpeakingStyle": "Rd",
-                "PerformanceDiff": -0.0621025095967091,
+                "PerformanceDiff": 0.0621025095967091,
                 "BasePerformance": 0.3368606701940035,
                 "BaselinePerformance": 0.3989631797907126,
                 "BaselineType": "norm"
@@ -104,7 +104,7 @@
             {
                 "RateType": "WER",
                 "SpeakingStyle": "HMI",
-                "PerformanceDiff": -0.04044098536638169,
+                "PerformanceDiff": 0.04044098536638169,
                 "BasePerformance": 0.4635416666666667,
                 "BaselinePerformance": 0.5039826520330484,
                 "BaselineType": "norm"
@@ -114,7 +114,7 @@
             {
                 "RateType": "WER",
                 "SpeakingStyle": "Rd",
-                "PerformanceDiff": -0.1468894470718186,
+                "PerformanceDiff": 0.1468894470718186,
                 "BasePerformance": 0.252073732718894,
                 "BaselinePerformance": 0.3989631797907126,
                 "BaselineType": "norm"
@@ -122,7 +122,7 @@
             {
                 "RateType": "WER",
                 "SpeakingStyle": "HMI",
-                "PerformanceDiff": -0.10767875059567672,
+                "PerformanceDiff": 0.10767875059567672,
                 "BasePerformance": 0.39630390143737165,
                 "BaselinePerformance": 0.5039826520330484,
                 "BaselineType": "norm"
@@ -132,7 +132,7 @@
             {
                 "RateType": "WER",
                 "SpeakingStyle": "Rd",
-                "PerformanceDiff": -0.18600021682774964,
+                "PerformanceDiff": 0.18600021682774964,
                 "BasePerformance": 0.21296296296296297,
                 "BaselinePerformance": 0.3989631797907126,
                 "BaselineType": "norm"
@@ -140,7 +140,7 @@
             {
                 "RateType": "WER",
                 "SpeakingStyle": "HMI",
-                "PerformanceDiff": -0.13411963833441826,
+                "PerformanceDiff": 0.13411963833441826,
                 "BasePerformance": 0.3698630136986301,
                 "BaselinePerformance": 0.5039826520330484,
                 "BaselineType": "norm"
@@ -188,7 +188,7 @@
             {
                 "RateType": "WER",
                 "SpeakingStyle": "Rd",
-                "PerformanceDiff": -0.04241380248116711,
+                "PerformanceDiff": 0.04241380248116711,
                 "BasePerformance": 0.3298059964726631,
                 "BaselinePerformance": 0.3722197989538302,
                 "BaselineType": "norm"
@@ -196,7 +196,7 @@
             {
                 "RateType": "WER",
                 "SpeakingStyle": "HMI",
-                "PerformanceDiff": -0.018326232917013574,
+                "PerformanceDiff": 0.018326232917013574,
                 "BasePerformance": 0.4375,
                 "BaselinePerformance": 0.4558262329170136,
                 "BaselineType": "norm"
@@ -206,7 +206,7 @@
             {
                 "RateType": "WER",
                 "SpeakingStyle": "Rd",
-                "PerformanceDiff": -0.1385792459584385,
+                "PerformanceDiff": 0.1385792459584385,
                 "BasePerformance": 0.23364055299539171,
                 "BaselinePerformance": 0.3722197989538302,
                 "BaselineType": "norm"
@@ -214,7 +214,7 @@
             {
                 "RateType": "WER",
                 "SpeakingStyle": "HMI",
-                "PerformanceDiff": -0.06773588384103824,
+                "PerformanceDiff": 0.06773588384103824,
                 "BasePerformance": 0.38809034907597534,
                 "BaselinePerformance": 0.4558262329170136,
                 "BaselineType": "norm"
@@ -224,7 +224,7 @@
             {
                 "RateType": "WER",
                 "SpeakingStyle": "Rd",
-                "PerformanceDiff": -0.18703461376864505,
+                "PerformanceDiff": 0.18703461376864505,
                 "BasePerformance": 0.18518518518518517,
                 "BaselinePerformance": 0.3722197989538302,
                 "BaselineType": "norm"
@@ -232,7 +232,7 @@
             {
                 "RateType": "WER",
                 "SpeakingStyle": "HMI",
-                "PerformanceDiff": -0.14760705483482178,
+                "PerformanceDiff": 0.14760705483482178,
                 "BasePerformance": 0.3082191780821918,
                 "BaselinePerformance": 0.4558262329170136,
                 "BaselineType": "norm"
@@ -280,7 +280,7 @@
             {
                 "RateType": "WER",
                 "SpeakingStyle": "Rd",
-                "PerformanceDiff": -0.04753892609621202,
+                "PerformanceDiff": 0.04753892609621202,
                 "BasePerformance": 0.3431372549019608,
                 "BaselinePerformance": 0.3906761809981728,
                 "BaselineType": "norm"
@@ -288,7 +288,7 @@
             {
                 "RateType": "WER",
                 "SpeakingStyle": "HMI",
-                "PerformanceDiff": -0.06581612040307261,
+                "PerformanceDiff": 0.06581612040307261,
                 "BasePerformance": 0.4482758620689655,
                 "BaselinePerformance": 0.5140919824720381,
                 "BaselineType": "norm"
@@ -298,7 +298,7 @@
             {
                 "RateType": "WER",
                 "SpeakingStyle": "Rd",
-                "PerformanceDiff": -0.1508774107354562,
+                "PerformanceDiff": 0.1508774107354562,
                 "BasePerformance": 0.2397987702627166,
                 "BaselinePerformance": 0.3906761809981728,
                 "BaselineType": "norm"
@@ -306,7 +306,7 @@
             {
                 "RateType": "WER",
                 "SpeakingStyle": "HMI",
-                "PerformanceDiff": -0.05680555031123413,
+                "PerformanceDiff": 0.05680555031123413,
                 "BasePerformance": 0.457286432160804,
                 "BaselinePerformance": 0.5140919824720381,
                 "BaselineType": "norm"
@@ -316,7 +316,7 @@
             {
                 "RateType": "WER",
                 "SpeakingStyle": "Rd",
-                "PerformanceDiff": -0.19490309979683798,
+                "PerformanceDiff": 0.19490309979683798,
                 "BasePerformance": 0.19577308120133483,
                 "BaselinePerformance": 0.3906761809981728,
                 "BaselineType": "norm"
@@ -324,7 +324,7 @@
             {
                 "RateType": "WER",
                 "SpeakingStyle": "HMI",
-                "PerformanceDiff": -0.09661625431669835,
+                "PerformanceDiff": 0.09661625431669835,
                 "BasePerformance": 0.4174757281553398,
                 "BaselinePerformance": 0.5140919824720381,
                 "BaselineType": "norm"
@@ -372,7 +372,7 @@
             {
                 "RateType": "WER",
                 "SpeakingStyle": "Rd",
-                "PerformanceDiff": -0.03595161597915564,
+                "PerformanceDiff": 0.03595161597915564,
                 "BasePerformance": 0.3391494002181025,
                 "BaselinePerformance": 0.37510101619725816,
                 "BaselineType": "norm"
@@ -390,7 +390,7 @@
             {
                 "RateType": "WER",
                 "SpeakingStyle": "Rd",
-                "PerformanceDiff": -0.06934360982498317,
+                "PerformanceDiff": 0.06934360982498317,
                 "BasePerformance": 0.305757406372275,
                 "BaselinePerformance": 0.37510101619725816,
                 "BaselineType": "norm"
@@ -398,7 +398,7 @@
             {
                 "RateType": "WER",
                 "SpeakingStyle": "HMI",
-                "PerformanceDiff": -0.0777323209644718,
+                "PerformanceDiff": 0.0777323209644718,
                 "BasePerformance": 0.4720101781170484,
                 "BaselinePerformance": 0.5497424990815202,
                 "BaselineType": "norm"
@@ -408,7 +408,7 @@
             {
                 "RateType": "WER",
                 "SpeakingStyle": "Rd",
-                "PerformanceDiff": -0.1381710940615518,
+                "PerformanceDiff": 0.1381710940615518,
                 "BasePerformance": 0.23692992213570635,
                 "BaselinePerformance": 0.37510101619725816,
                 "BaselineType": "norm"
@@ -416,7 +416,7 @@
             {
                 "RateType": "WER",
                 "SpeakingStyle": "HMI",
-                "PerformanceDiff": -0.11974249908152018,
+                "PerformanceDiff": 0.11974249908152018,
                 "BasePerformance": 0.43,
                 "BaselinePerformance": 0.5497424990815202,
                 "BaselineType": "norm"
