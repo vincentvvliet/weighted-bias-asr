@@ -1,6 +1,7 @@
-import pandas as pd
 import json
-import numpy as np
+
+import pandas as pd
+
 
 def get_performance_differences(df, fpm):
     performance_diff_abs_min = performance_difference(df, fpm, baseline_type='min', diff_type='absolute')

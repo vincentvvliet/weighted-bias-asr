@@ -1,16 +1,16 @@
 {
     "Rd": {
-        "NoAug": 40.33,
-        "SpAug": 39.9,
-        "SpSpecAug": 37.22,
-        "FT-Wpr": 39.07,
-        "Whisper": 37.51
+        "NoAug": 67.64,
+        "SpAug": 74.42,
+        "SpSpecAug": 78.52,
+        "FT-Wpr": 78.62,
+        "Whisper": 49.87
     },
     "HMI": {
-        "NoAug": 51.99,
-        "SpAug": 50.4,
-        "SpSpecAug": 45.58,
-        "FT-Wpr": 51.41,
-        "Whisper": 54.97
+        "NoAug": 41.25,
+        "SpAug": 46.98,
+        "SpSpecAug": 46.85,
+        "FT-Wpr": 39.97,
+        "Whisper": 41.96
     }
 }
