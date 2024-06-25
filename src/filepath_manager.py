@@ -38,13 +38,6 @@ class FilepathManager:
         return self._generate_path(template, error_rate=error_rate, speaking_style_folder=speaking_style_folder,
                                    speaking_style_infix=speaking_style_infix, speaker_group=speaker_group,
                                    asr_model=asr_model)
-
-    def get_meta_path(self, speaking_style_folder, speaking_style_infix, speaker_group):
-        # Public method to get the path for a metadata file
-        template = self.path_templates['meta_file']
-        return self._generate_path(template, speaking_style_folder=speaking_style_folder,
-                                   speaking_style_infix=speaking_style_infix, speaker_group=speaker_group)
-
     def get_output_path(self, speaking_style_folder, speaking_style_infix, speaker_group, asr_model):
         # Public method to get the path for an output file
         template = self.path_templates['output_file']
